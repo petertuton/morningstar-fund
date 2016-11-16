@@ -1,0 +1,18 @@
+{
+  "name": "morningstar-fund",
+  "version": "0.0.1",
+  "description": "Module to extract morningstar fund data and load into Cloudant",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "cloudant": "^1.5.2",
+    "command-line-args": "^3.0.1",
+    "dotenv": "^2.0.0",
+    "request": "^2.76.0"
+  }
+}
