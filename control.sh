@@ -1,7 +1,6 @@
 #!/bin/bash
 
-#for i in {1..84}
-for i in {83..83}
+for i in {1..84}
 do
   # Process 600 requests in a single request, every 1 minute
   last=$((i*600))
@@ -13,7 +12,7 @@ do
   echo "$container: ($first - $last)"
   cf ic run --name ${container} -m 128 --env-file=.env registry.ng.bluemix.net/tuton/morningstar-fund -f ${first} -l ${last}
 
-  #number=$((0.1 + RANDOM % 1))
+  #number=$((1 + RANDOM % 1))
   #number=$((${RANDOM}%98+1))
   #printf -v number "0.%.2d" $number
   number=60
