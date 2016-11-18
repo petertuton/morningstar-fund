@@ -10,29 +10,32 @@ const optionDefinitions = [
   { name: 'verbose', alias: 'v', type: Boolean },
   { name: 'first', alias: 'f', type: Number },
   { name: 'last', alias: 'l', type: Number },
-  { name: 'replace', alias: 'r', type: Boolean }
+  { name: 'readonly', alias: 'r', type: Boolean }
 ];
 const options = commandLineArgs(optionDefinitions);
 
 // Globals
 GLOBAL.verbose = options.verbose;
+GLOBAL.readonly = options.readonly;
 GLOBAL.funddb;
 
 var first = options.first,
     last = options.last ? options.last : options.first;
 
 if ( first === undefined || last === undefined) {
-  console.log("Missing first and/or last parameters");
+  console.log("Missing 'first' parameter");
   return;
 }
+if ( readonly ) console.log("WARNING: Readonly flag - funds will not be inserted into the database");
+
 console.log("Requesting funds in the following range: " + first + "-" + last);
 
 // Remove any existing database named "fund"
-if (verbose) console.log("Destroying existing fund database...");
-cloudant.db.destroy('fund', function(err) {
+//if (verbose) console.log("Destroying existing fund database...");
+//cloudant.db.destroy('fund', function(err) {
   // Create a new "fund" database
-  if (verbose) console.log("Creating fund database...");
-  cloudant.db.create('fund', function() {
+//  if (verbose) console.log("Creating fund database...");
+//  cloudant.db.create('fund', function() {
     // Use the fund database
     funddb = cloudant.db.use('fund');
     // Request and insert the funds
@@ -44,8 +47,8 @@ cloudant.db.destroy('fund', function(err) {
         console.error(err);
       });
     }
-  });
-});
+//  });
+//});
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,15 +56,17 @@ cloudant.db.destroy('fund', function(err) {
 
 function insertFund(fund) {
   return new Promise(function(resolve, reject) {
-    funddb.insert(fund, function(err, body, header) {
-      if (err) {
-        reject('[funddb.insert:' + fund._id + '] ' + err.message);
-        return;
-      }
-      console.log('Inserted the fund: ' + fund._id);
-      if (verbose) console.log(body);
-      resolve(true);
-    });
+    if (!readonly) {
+      funddb.insert(fund, function(err, body, header) {
+        if (err) {
+          reject('[funddb.insert:' + fund._id + '] ' + err.message);
+          return;
+        }
+        console.log('Inserted the fund: ' + fund._id);
+        if (verbose) console.log(body);
+        resolve(true);
+      });
+    } else resolve(true);
   })
 }
 
@@ -212,7 +217,7 @@ function arraysToHash(headings, row) {
 
 function cellValue($, cellIndex, cell, isHeader) {
   // Removes everything between brackets
-  var result = $(cell).text().trim().replace(/ *\([^)]*\)/g, "").replace(/%/g, "").replace(/,/g, "").replace(/--/g, "null");
+  var result = $(cell).text().trim().replace(/ *\([^)]*\)/g, "").replace(/%/g, "").replace(/,/g, "").replace(/--/g, "-999.99");
   // Convert to number, if possible
   var number = Number(result);
   return number || (number===0) ? number : result === "null" ? null : result;
