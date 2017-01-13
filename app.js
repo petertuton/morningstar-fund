@@ -286,7 +286,7 @@ function extractTable($, table, headings) {
 
   for (i = 0, len = tmpArray.length; i<len; i++) {
     row = tmpArray[i];
-    console.log("ROW: " + row);
+
     if (!isNull(row)) {
       txt = arraysToHash(headings, row);
       result[result.length] = txt;
