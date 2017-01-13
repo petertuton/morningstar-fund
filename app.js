@@ -97,6 +97,8 @@ function requestFund(fundId) {
 
       // The "Asset Allocation" table annoyingly has an extra </tr> - remove it
       // Probably could just use the replace method...
+      // Has been fixed by Morningstar 13 Jan 2017
+      /*
       var extraTR = html.indexOf("<td class=\"borderbottom YMWpadleft\">International Equity</td>");
       if (extraTR > 0) {
         var leftHTML = html.substr(0, extraTR-80) + "</tr>\n"
@@ -104,6 +106,7 @@ function requestFund(fundId) {
         rightHTML = "<tr>\n" + rightHTML;
         html = leftHTML + rightHTML;
       }
+      */
 
       // Replace rating images with text
       html = html.replace(/<img src=\"\/Content\/images\/5starscropped.gif\" alt=\"5\" \/>/g, "5");
@@ -115,10 +118,10 @@ function requestFund(fundId) {
       // Replace instances of <br /> with " "
       html = html.replace(/<br \/>/g, " ");
 
-//        console.log("############################################");
-//        console.log("### HTML");
-//        console.log("############################################");
-//        console.log(html);
+//    console.log("############################################");
+//    console.log("### HTML");
+//    console.log("############################################");
+//    console.log(html);
 
       // Load the HTML into cheerio to make it easier to parse
       var $ = cheerio.load(html);
@@ -150,8 +153,8 @@ function requestFund(fundId) {
 //          console.log($(table).html());
 
         var tableName = getTableName($, table);
-        if (tableName === "Performance")
-          return; // Ignore the Performance table
+        if (tableName === "Performance" || tableName === "Morningstar Sustainability Rating")
+          return; // Ignore these table
 //          console.log("############################################");
 //          console.log("### "+ tableName);
 //          console.log("############################################");
@@ -205,7 +208,7 @@ function arraysToHash(headings, row) {
 
   var h_index = 0;
   for (var i = 1, len = row.length; i < len; i++) {
-    if ( h_index < headings.length && !isNull(row[i]) ) {
+    if ( h_index < headings.length /*&& !isNull(row[i])*/ ) {
       result[ key + " " + headings[h_index] ] = row[i];
       h_index++;
     }
@@ -217,7 +220,7 @@ function arraysToHash(headings, row) {
 
 function cellValue($, cellIndex, cell, isHeader) {
   // Removes everything between brackets
-  var result = $(cell).text().trim().replace(/ *\([^)]*\)/g, "").replace(/%/g, "").replace(/,/g, "").replace(/--/g, "-999.99");
+  var result = $(cell).text().trim().replace(/ *\([^)]*\)/g, "").replace(/%/g, "").replace(/,/g, "").replace(/--/g, "null");
   // Convert to number, if possible
   var number = Number(result);
   return number || (number===0) ? number : result === "null" ? null : result;
@@ -272,9 +275,9 @@ function extractTable($, table, headings) {
           while (tmpArray[rowIndex][cellIndex]) { cellIndex++; }
 
           txt = tmpArray[rowIndex][cellIndex] || cellValue($, cellIndex, $cell);
-          if (!isNull(txt)) {
+          //if (!isNull(txt)) {
             tmpArray[rowIndex][cellIndex] = txt;
-          }
+          //}
           cellIndex++;
         });
       };
@@ -283,6 +286,7 @@ function extractTable($, table, headings) {
 
   for (i = 0, len = tmpArray.length; i<len; i++) {
     row = tmpArray[i];
+    console.log("ROW: " + row);
     if (!isNull(row)) {
       txt = arraysToHash(headings, row);
       result[result.length] = txt;
